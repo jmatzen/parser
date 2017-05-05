@@ -7,6 +7,10 @@ import java.util.stream.Stream
  * Created by John on 5/2/2017.
  */
 class Tokenizer(val s: InputStream) {
+  val str = s.reader().readText()
+  var begin = 0
+  var end = 0
+
   enum class Action {
     NONE,
     POP,
@@ -41,24 +45,48 @@ class Tokenizer(val s: InputStream) {
 //      )
   )
 
-  fun tokenize(state: Array<State> = table, str:String = s.reader().readText(), begin_:Int = 0, end: Int = 1, cb: (Token)->Unit) {
-    var begin = begin_
-    var end_ = end;
-    var bestMatch : Token.Type = Token.Type.WHITESPACE
-    loop@ while (end_ <= str.length) {
-      val sub = str.substring(begin, end_)
-      for(s in state) {
+  fun next() : Token {
+
+    var best = Token.Type.END
+    var end_ = end
+
+    loop@ while (end_ != str.length) {
+      val sub = str.substring(begin, end_+1)
+      for (s in table) {
         if (s.regex.matches(sub)) {
           ++end_
-          bestMatch = s.type
+          best = s.type
           continue@loop
         }
       }
-      val tokenValue = str.substring(begin, end_-1)
-      cb(Token(bestMatch, tokenValue))
-      begin = end_-1
+      break
+//      return Token(best, str.substring(begin, end_))
     }
-    cb(Token(bestMatch, str.substring(begin, end_-1)))
-
+    var result = Token(best, str.substring(begin, end_))
+    begin = end_
+    end = begin
+    return result
   }
+
+//
+//  fun tokenize(state: Array<State> = table, str:String = s.reader().readText(), begin_:Int = 0, end: Int = 1, cb: (Token)->Unit) {
+//    var begin = begin_
+//    var end_ = end
+//    var bestMatch : Token.Type = Token.Type.WHITESPACE
+//    loop@ while (end_ <= str.length) {
+//      val sub = str.substring(begin, end_)
+//      for(s in state) {
+//        if (s.regex.matches(sub)) {
+//          ++end_
+//          bestMatch = s.type
+//          continue@loop
+//        }
+//      }
+//      val tokenValue = str.substring(begin, end_-1)
+//      cb(Token(bestMatch, tokenValue))
+//      begin = end_-1
+//    }
+//    cb(Token(bestMatch, str.substring(begin, end_-1)))
+//
+//  }
 }

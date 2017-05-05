@@ -4,8 +4,12 @@ package com.ayxia.test
  * Created by John on 4/26/2017.
  */
 
-class Parser(val tokens: Array<Token>) {
-  var index: Int = 0
+class Parser(val tokenizer: Tokenizer) {
+  val tokens: MutableList<Token> = mutableListOf()
+
+  init {
+    next()
+  }
 
   fun eval() : Double =  parseExpr().eval()
 
@@ -55,26 +59,31 @@ class Parser(val tokens: Array<Token>) {
   }
 
   fun parsePrimary(): Expr {
-    when (next().type) {
-      Token.Type.NUMBER -> { return Number(prev().value.toDouble()) }
-      Token.Type.LPAREN -> { val p = parseExpr(); next(); return p }
+    if (match(Token.Type.NUMBER))
+      return Number(prev().value.toDouble())
+    if (match(Token.Type.LPAREN)) {
+      val p = parseExpr()
+      next()
+      return p
     }
     throw Exception("parse failure")
   }
 
-  fun next() = if (index == tokens.size) Token(Token.Type.END) else tokens[index++]
+  fun next() : Token {
+    tokens.add(tokenizer.next())
+    return tokens[tokens.size-1]
+  }
 
-  fun prev() = tokens[index-1]
+  fun prev() = tokens[tokens.size-2]
 
   fun match(vararg t: Token.Type) : Boolean {
-    if (index < tokens.size) {
+    val token = tokens[tokens.size-1].type
       t.forEach {
-        if (tokens[index].type == it) {
+        if (token == it) {
           next()
           return true
         }
       }
-    }
     return false
   }
 

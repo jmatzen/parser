@@ -14,12 +14,7 @@ fun main(args: Array<String>) {
     var line = readLine()!!
     try {
       val tokenizer = Tokenizer(BufferedInputStream(ByteArrayInputStream(line.toByteArray())))
-      val tokens : MutableList<Token> = mutableListOf()
-      tokenizer.tokenize(cb = {
-        token->if (token.type != Token.Type.WHITESPACE) tokens.add(token)
-      })
-
-      println(Parser(tokens.toTypedArray()).eval())
+      println(Parser(tokenizer).eval())
     }
     catch (e: Exception) {
       println(e)
